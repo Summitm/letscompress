@@ -1,12 +1,10 @@
-const crypto = require('crypto');//for unique name
-const path = require('path');
 const mongoose = require('mongoose');//orm for mongo
-const multer = require('multer');//Nodejs middleware for handling file uploads
-const GridFsStorage = require('multer-gridfs-storage');
+const dotenv = require('dotenv');
+const multer = require('multer'); //Nodejs middleware for handling file uploads
+const { GridFsStorage } = require('multer-gridfs-storage');
+dotenv.config();
 
-
-const URI = "mongodb://appuser:appuser123@localhost:27017/compressed";
-
+const URI = process.env.CONN_URI;
 
 const conn  = mongoose.connect(URI, {
     useNewUrlParser: true,//to avoid duplication warning
@@ -17,8 +15,14 @@ const conn  = mongoose.connect(URI, {
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "Connection Err: "));//listener
+
+let bucket;
 db.once("open", ()=>{ //one time listener
-    console.log("Connection Successful!");
+    let dbs = mongoose.connection[0];
+    bucket = new mongoose.mongo.GridFSBucket(dbs, {
+        bucketName: "uploads"
+    })
+    console.log(`Connection Successful, our bucket is: ${bucket}`);
 });
 
 

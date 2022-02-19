@@ -7,7 +7,7 @@ module.exports.addUser = [
         return User.findOne({username:value})
         .then(user => {
             if(user !== null) {
-                return Promise.reject("Username already taken.")
+                return Promise.reject("Username already taken.");
             }
         });
     }),
