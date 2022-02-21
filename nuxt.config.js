@@ -44,5 +44,42 @@ export default {
 
   serverMiddleware:[ 
     '~/api/main.js'
-  ]
+  ],
+
+  // auth
+  auth: {
+    strategy: {
+      local: {
+        endpoints: {
+          login:{
+            url: '/api/users/login', method: 'post', propertyName: 'token'
+          },
+          logout: true,
+          user: {
+            url: '/api/users/user', method: 'get', propertyName: 'user'
+          }
+        },
+        user: {
+          autofetch: true,
+          propertyName: 'user'
+        },
+        token: {
+          propertyName: 'token',
+          type: 'Bearer',
+          global: true,
+          required: true,
+        }
+      }
+    },
+    redirect: {
+      home: '/',
+      login: '/auth/login'
+    },
+    rewriteRedirects: true
+  },
+
+  // axios config
+  axios: {
+    baseURL: "http://localhost:3000"
+  },
 }
