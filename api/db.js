@@ -19,10 +19,10 @@ db.on("error", console.error.bind(console, "Connection Err: "));//listener
 let bucket;
 db.once("open", ()=>{ //one time listener
     let dbs = mongoose.connection[0];
-    bucket = new mongoose.mongo.GridFSBucket(dbs, {
-        bucketName: "uploads"
-    })
-    console.log(`Connection Successful, our bucket is: ${bucket}`);
+    // bucket = new mongoose.mongo.GridFSBucket(dbs, {
+    //     bucketName: "uploads"
+    // })
+    // console.log(`Connection Successful, our bucket is: ${bucket}`);
 });
 
 
