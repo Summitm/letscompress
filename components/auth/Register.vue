@@ -13,7 +13,7 @@
             >
                 <h1 class="text-center font-extrabold">REGISTER</h1>
                 <form action="" class="text-black-500 pt-4" @submit.prevent="signUp">
-                    <label for="name" class="block">
+                    <!-- <label for="name" class="block">
                         <span class="text-black-100">Full name</span>
                         <input
                         type="text"
@@ -36,7 +36,7 @@
                         <span class="text-red-500 text-xs" v-if="errors && errors.full_name">
                             {{errors.full_name.msg}}
                         </span>
-                    </label>
+                    </label> -->
                     <label for="username" class="block">
                         <span class="text-black-100">Username</span>
                         <input
@@ -109,7 +109,7 @@
                             {{passwordErr}}
                         </span>
                     </label>
-                    <label for="checkbox">
+                    <!-- <label for="checkbox">
                         <input
                         type="checkbox"
                         v-model="register.signed_terms"
@@ -127,7 +127,7 @@
                         <span class="text-red-500 text-xs" v-if="errors && errors.signed_terms">
                             {{errors.signed_terms.msg}}
                         </span>
-                    </label>
+                    </label> -->
                     <button
                         type="submit"
                         class="
@@ -136,7 +136,7 @@
                         px-3
                         py-2
                         rounded-full
-                        bg-blue-250
+                        bg-blue-500
                         hover:bg-blue-650
                         focus:bg-blue-650
                         "
@@ -162,14 +162,13 @@
 <script>
 // import axios from 'vue-axios';
 export default {
-    middleware: 'guest',
     data() {
         return {
             register: {
-                fullname: "",
+                // fullname: "",
                 username: "",
                 password: "",
-                signed_terms: "",
+                // signed_terms: "",
             },
             confirm_password: "",
             isError: false,
@@ -195,13 +194,11 @@ export default {
         },
         async signUp() {
                 this.loading = true;
-                try {
+                // try {
 
-                    const user = await this.$axios.$post('/api/users/register', {
-                        full_name: this.register.fullname,
+                    await this.$axios.$post('/api/user/add', {
                         username: this.register.username,
                         password: this.register.password,
-                        signed_terms: this.register.signed_terms
                     })
                     .then((user)=>{
                         this.$toast.success(user.message,{
@@ -214,20 +211,25 @@ export default {
                             position: 'top-center',
                             duration: 7000
                         });
-                        this.$router.push('/auth/login');
+                        // this.$router.push('/auth/login');
+                    })
+                    .catch((error)=>{
+                        if(error.response.data.errors) {
+                            this.errors = error.response.data.errors;
+                        }
                     })
                     .finally(()=>{
                         this.loading = false;
                     })
 
-                } catch (error) {
+                // } catch (error) {
 
-                    // console.log(error);
-                    if(error.response.data.errors) {
-                        this.errors = error.response.data.errors;
-                    }
+                //     console.log(error);
+                //     if(error.response.data.errors) {
+                //         this.errors = error.response.data.errors;
+                //     }
 
-                }
+                // }
             // else{}
         }
     },

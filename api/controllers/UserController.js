@@ -1,11 +1,11 @@
+const config = require('../config');
+const User = require('../models/User.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const validator = require('express-validator');
-const User = require('../models/User');
-const config = require('../config');
 
 module.exports.register = [
-    validator.body('username', 'Please enter a valid username!').isLength({ min:1 }),
+    validator.body('username', 'Please enter a valid username!'),
     validator.body('username').custom(value => {
         return User.findOne({username:value})
         .then(user => {
@@ -20,19 +20,22 @@ module.exports.register = [
     function(req, res) {
         const errors = validator.validationResult(req);
         if(!errors.isEmpty()) {
-            return res.json({errors: errors.mapped()})
-        }
+            return res.status(500).json({errors: errors.mapped()});
+        };
 
-        // hash the password
-        const salt = bcrypt.genSalt(10);
-        const hash = bcrypt.hashSync(req.body.password, salt);
-        // initialize new user record
-        var user = new User({
+        const user = new User({
             username: req.body.username,
-            password: hash
+            password: req.body.password
         });
 
-        user.save((err, createdUser)=>{
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(user.password, salt);
+        // hashed password
+        user.password = hash;
+
+        // initialize new user record
+
+        user.save((err, createdUser) => {
             if(err) {
                 return res.status(500).json({message: err.mapped()});
             }
@@ -46,7 +49,7 @@ module.exports.login = [
     validator.body('username').custom(value => {
         return User.findOne({username:value})
         .then(user => {
-            if(user == null) {
+            if(user === null) {
                 return Promise.reject("That username doesn't exist!");
             }
         });
@@ -62,39 +65,63 @@ module.exports.login = [
             return res.status(500).json({err: errors.mapped()});
         }
 
-        User.findOne({username:req.body.username}, (err, results, mapped) => {
+        User.findOne({username:req.body.username}, (err, result) => {
             if(err) 
             {
-                return res.status(500).json({err: err.mapped()}) ;
+                return res.status(500).json({message: "Error trying to login!", error: err.mapped()});
             }
 
-            if(results.length > 0) 
+            if(result === null) 
             {
-                const user = results;
+                return res.status(404).json({message: "User with that username doesn't exist"});
+            }
 
-                return bcrypt.compare(req.body.password, user.password, (error, isMatched) => {
-                    if(isMatched) 
-                    {
-                        return res.json({
-                            user: {
-                                username: user.username,
-                            },
-                            token: jwt.sign({username:uer.username}, config.authSecret)
-                        })
-                    }
-                    else
-                    {
-                        return res.status(500).json({errors: "Invalid password!"});
-                    }
-                })
-            }
-            else
-            {
-                return res.status(500).json({errors: "Invalid username!"});
-            }
-        })
+            return bcrypt.compare(req.body.password, result.password, (err, isMatched) => {
+                if(isMatched === true) 
+                {
+                    return res.status(200).json({
+                        user: {
+                            username: result.username
+                        },
+                        token: jwt.sign({username: result.username}, config.authSecret)
+                    });
+                }
+                else 
+                {
+                    return res.status(500).json({message: "Invalid login credentials!"});
+                }
+            })
+        });
     }
 ];
+
+// get User
+module.exports.user = async (req, res, next) => {
+    const bearerHeader = req.headers['authorization'];
+
+    if(bearerHeader !== undefined) 
+    {
+        const auth_str = bearerHeader.split(' ');
+
+        const token = auth_str[1];
+
+        // token verification
+        jwt.verify(token, config.authSecret, (err, decode) => {
+            if(err) 
+            {
+                return res.status(401).json({errors: err.mapped()});
+            }
+            else 
+            {
+                return res.status(200).json({user: decoded});
+            }
+        });
+    }
+    else 
+    {
+        return res.status(404).json({message: "No token found!"});
+    }
+}
 
 module.exports.getAllUsers = (req,res, next) => {
    

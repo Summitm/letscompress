@@ -9,6 +9,9 @@ router.post('/user/add', UserController.register);
 // delete users
 router.post('/user/login', UserController.login);
 
+// get user
+router.get('/user/user', UserController.user);
+
 // get all users
 router.get('/users/all', UserController.getAllUsers);
 
