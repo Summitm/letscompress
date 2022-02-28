@@ -106,7 +106,7 @@ module.exports.user = async (req, res, next) => {
         const token = auth_str[1];
 
         // token verification
-        jwt.verify(token, config.authSecret, (err, decode) => {
+        jwt.verify(token, config.authSecret, (err, decoded) => {
             if(err) 
             {
                 return res.status(401).json({errors: err.mapped()});

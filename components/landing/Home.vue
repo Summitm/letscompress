@@ -10,7 +10,7 @@
         <div class="">
             <form
                 action=""
-                @submit.prevent="uploads()"
+                @submit.prevent="uploads"
                 enctype="multipart/form-data"
                 class="text-center max-w-screen"
             >
@@ -54,10 +54,11 @@
                                 <span>Upload a file</span>
                                 <input
                                 id="file-upload"
-                                name="files[]"
+                                name="file"
                                 type="file"
                                 class="sr-only"
-                                multiple
+                                ref="file"
+                                required
                                 />
                             </label>
                             <p class="text-xs mt-6 text-gray-500">.pub, .xml, .txt up to 100MB</p>
@@ -75,11 +76,45 @@
 <script>
 export default {
     data() {
-        return {};
+        return {
+            selectedFile: null
+        };
     },
     methods: {
-        async uploads() {
-            console.info("Uploads a file and saves it to the db!");
+        async uploads(e) {
+            this.selectedFile = e.target.file;
+            let formData = new FormData();
+            formData.append('file',this.selectedFile);
+            console.log(`Our file before upload is:: ${this.selectedFile}`);
+
+            await this.$axios.post('/api/uploads', formData)
+            .then((response) => {
+                this.$toast.success(`{response.statusText}! Upload Successful..`, {
+                    action: {
+                        text: 'X',
+                        onclick: (e, toastObj) => {
+                            toastObj.goAway(0);
+                        }
+                    },
+                    position: 'top-center',
+                    duration: 7000
+                });
+
+                this.$router.replace('/filelist');
+            })
+            .catch((error) => {
+                console.log(error);
+                this.$toast.error(`Error while trying to upload! Please try again!`, {
+                    action: {
+                        text: 'X',
+                        onclick: (e, toastObj) => {
+                            toastObj.goAway(0);
+                        }
+                    },
+                    position: 'top-center',
+                    duration: 7000
+                });
+            });
         },
     },
 };

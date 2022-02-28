@@ -1,38 +1,45 @@
-const validator = require('express-validator');
-const Files = require('../models/Uploads');
+const { GridFsStorage } = require('multer-gridfs-storage');
+const multer = require('multer');
+const { db, gfs } = require('../db');
 
-module.exports.create = [
-    validator.body('filesize', 'File is too large or too small').isNumeric({min:10, max:1000}),
-    validator.body('name').custom(value => {
-        return Files.findOne({name:value})
-        .then((file) => {
-            if(file !== null) 
-            {
-                return Promise.reject("Duplicate filename!");
-            }
-        });
-    }),
+module.exports.savefile = (req, res, next) => {
+    // storage engine
+    const storage = new GridFsStorage({
+        url: process.env.CONN_URI,
+        file: (req, file) => {
+            return new Promise((resolve, reject) => {
+                crypto.randomBytes(16, (err, buff) => {
+                    if(err) 
+                    {
+                        return reject(err);
+                    }
 
-    function(req, res)
-    {
-        const errors = validator.validationResult(req);
-        if(!errors.isEmpty()) 
+                    const filename = buff.toString('hex') + path.extname(file.originalname);
+                    const fileInfo = {
+                        filename: filename,
+                        bucketName: 'uploads'
+                    };
+                    resolve(fileInfo);
+                })
+            })
+        }
+    });
+
+    const upload = multer({ storage });
+
+    upload.single('file');
+
+    res.json({'file': req.file});
+    // res.redirect('/');
+}
+
+module.exports.fileregister = (req, res, next) => {
+    gfs.file.find().toArray((err, files) => {
+        if(!files || files.length === 0) 
         {
-            return res.json({err: errors.mapped()})
+            return res.status(404).json({err: "No files found"});
         }
 
-        const file = new Files({
-            name: req.body.name,
-            filesize: req.body.filesize,
-        })
-
-        file.save((err, created) => {
-            if(err)
-            {
-                return res.status(500).json({message: err.mapped()});
-            }
-            return res.status(200).json({message: "file saved successfully!"})
-        })
-    }
-
-]
+        return res.status(200).json(files);
+    })
+}

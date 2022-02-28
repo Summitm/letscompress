@@ -1,9 +1,12 @@
 const { Router } = require('express');
+
 const router = Router();
+const fileController = require('../controllers/FileController');
 
-const fileControllers = require('../controllers/FileController');
+// file upload
+router.post('/uploads', fileController.savefile);
 
-// save file
-router.post('/files/save-one', fileControllers.create);
+// list all files
+router.get('/fileslist', fileController.fileregister);
 
 module.exports = router;

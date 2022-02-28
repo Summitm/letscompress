@@ -51,28 +51,28 @@ export default {
 
     // auth
     auth: {
-        strategy: {
-        local: {
-            endpoints: {
-            login:{
-                url: '/api/user/login', method: 'post', propertyName: 'token'
-            },
-            logout: true,
-            user: {
-                url: '/api/user/user', method: 'get', propertyName: 'user'
+        strategies: {
+            local: {
+                endpoints: {
+                    login:{
+                        url: '/api/user/login', method: 'post', propertyName: 'token'
+                    },
+                    logout: true,
+                    user: {
+                        url: '/api/user/user', method: 'get', propertyName: 'user'
+                    }
+                },
+                user: {
+                    autofetch: true,
+                    property: 'user'
+                },
+                token: {
+                    property: 'token',
+                    type: 'Bearer',
+                    global: true,
+                    required: true,
+                }
             }
-            },
-            user: {
-                autofetch: true,
-                propertyName: 'user'
-            },
-            token: {
-                propertyName: 'token',
-                type: 'Bearer',
-                global: true,
-                required: true,
-            }
-        }
         },
         redirect: {
             home: '/dashboard',
